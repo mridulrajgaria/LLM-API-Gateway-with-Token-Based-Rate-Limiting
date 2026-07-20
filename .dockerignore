@@ -1,0 +1,13 @@
+node_modules/
+npm-debug.log
+.env
+.env.*
+.git
+.gitignore
+README.md
+scratch/
+scripts/test-gateway.js
+scripts/load-test.js
+scripts/verify-logs.js
+Dockerfile
+docker-compose*.yml

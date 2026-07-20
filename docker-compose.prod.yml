@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build: .
+    container_name: llm-api-gateway
+    restart: always
+    env_file:
+      - .env.production
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
