@@ -7,18 +7,9 @@ echo "Starting deployment of LLM API Gateway..."
 echo "Pulling latest code from Git..."
 # git pull origin main
 
-# 2. Install dependencies
-echo "Installing Node.js dependencies..."
-npm ci --only=production
-
-# 3. Reload PM2
-if pm2 show llm-api-gateway > /dev/null; then
-    echo "Reloading PM2 process..."
-    pm2 reload llm-api-gateway --update-env
-else
-    echo "Starting PM2 process for the first time..."
-    pm2 start ecosystem.config.js --env production
-fi
+# 2. Deploy with Docker Compose
+echo "Building and starting Docker containers..."
+sudo docker compose -f docker-compose.prod.yml up -d --build
 
 # 4. Check Nginx Config
 echo "Testing Nginx configuration..."
