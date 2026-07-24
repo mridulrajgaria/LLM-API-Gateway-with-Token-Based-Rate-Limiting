@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLM API Gateway | Interactive Demo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #09090b; /* Deep zinc */
+            --bg: #09090b;
             --surface: #18181b;
             --border: #27272a;
             --text-main: #f4f4f5;
             --text-muted: #a1a1aa;
-            --accent: #f97316; /* Vibrant Orange */
-            --success: #10b981; /* Emerald */
-            --font-sans: 'Space Grotesk', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
+            --accent: #3b82f6; /* Trust blue */
+            --user-msg: #2563eb;
+            --ai-msg: #27272a;
+            --success: #10b981;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'Fira Code', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,365 +28,351 @@
             font-family: var(--font-sans);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem 1rem;
         }
 
-        .wrapper {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
+        .dashboard {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
         }
 
-        /* --- HERO & METRICS --- */
-        .hero { text-align: center; margin-bottom: 4rem; }
-        
-        .status-pill {
+        /* --- Header --- */
+        .header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .pill {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             background: rgba(16, 185, 129, 0.1);
             color: var(--success);
-            padding: 6px 16px;
+            padding: 4px 12px;
             border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); }
+
+        h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.03em; }
+        .subtitle { color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+
+        /* --- Chat Interface --- */
+        .chat-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .chat-title { font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 8px;}
+        .demo-badge { font-size: 0.75rem; background: var(--border); padding: 2px 8px; border-radius: 4px; color: var(--text-muted); }
+
+        .chat-history {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message {
+            max-width: 80%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .msg-user { align-self: flex-end; }
+        .msg-ai { align-self: flex-start; }
+
+        .msg-bubble {
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .msg-user .msg-bubble {
+            background: var(--user-msg);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-ai .msg-bubble {
+            background: var(--ai-msg);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* --- Gateway Visualizer --- */
+        .gateway-visualizer {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 0.5rem;
+            display: none; /* Hidden by default */
+        }
+
+        .gateway-title {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
             font-family: var(--font-mono);
             font-size: 0.85rem;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-        
-        .dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); }
-
-        h1 {
-            font-size: clamp(2.5rem, 5vw, 4.5rem);
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            letter-spacing: -0.04em;
-        }
-        h1 span { color: var(--accent); }
-
-        .explainer {
-            font-size: 1.2rem;
             color: var(--text-muted);
-            max-width: 700px;
-            margin: 0 auto 3rem auto;
+            opacity: 0.4;
+            transition: opacity 0.3s, color 0.3s;
         }
-
-/* Hard numbers removed based on user feedback */
-
-        /* --- ARCHITECTURE DIAGRAM --- */
-        .section-title {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-            letter-spacing: -0.02em;
-            text-align: center;
-        }
-
-        .arch-flow {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            padding: 3rem 2rem;
-            border-radius: 16px;
-            margin-bottom: 4rem;
-            position: relative;
-        }
-
-        .arch-node {
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            width: 140px;
-        }
-
-        .arch-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--bg);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            margin: 0 auto 1rem auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            transition: border-color 0.3s;
-        }
-
-        .arch-node:hover .arch-icon { border-color: var(--accent); }
-
-        .arch-title { font-weight: 700; margin-bottom: 0.25rem; font-size: 1rem; }
-        .arch-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; }
-
-        .arch-arrow {
-            flex-grow: 1;
-            height: 2px;
-            background: var(--border);
-            position: relative;
-            margin: 0 1rem;
-            top: -30px;
-        }
-
-        .arch-arrow::after {
-            content: '▶';
-            position: absolute;
-            right: -5px;
-            top: -8px;
-            color: var(--border);
-            font-size: 14px;
-        }
-
-        /* --- INTERACTIVE DEMO (MAC TERMINAL STYLE) --- */
-        .terminal {
-            background: #000;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-        }
-
-        .term-header {
-            background: var(--surface);
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .term-dot { width: 12px; height: 12px; border-radius: 50%; }
-        .dot-r { background: #ef4444; }
-        .dot-y { background: #eab308; }
-        .dot-g { background: #22c55e; }
         
-        .term-title { margin: 0 auto; color: var(--text-muted); font-size: 0.85rem; font-family: var(--font-mono); }
+        .step:last-child { margin-bottom: 0; }
 
-        .term-body { padding: 2rem; }
-
-        .input-group { margin-bottom: 2rem; }
+        .step.active { opacity: 1; color: var(--text-main); }
+        .step.done { opacity: 1; color: var(--success); }
         
-        textarea {
-            width: 100%;
-            background: transparent;
-            border: none;
-            border-left: 2px solid var(--border);
-            color: var(--text-main);
+        .step-icon { font-size: 1.1rem; }
+
+        /* --- Receipt --- */
+        .receipt {
             font-family: var(--font-mono);
-            font-size: 1rem;
-            padding: 0.5rem 1rem;
-            resize: vertical;
-            min-height: 80px;
-            outline: none;
-            transition: border-color 0.3s;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.1);
+            border-radius: 6px;
+            display: inline-block;
         }
 
-        textarea:focus { border-left-color: var(--accent); }
+        /* --- Input Area --- */
+        .chat-input-area {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            background: rgba(255,255,255,0.01);
+            display: flex;
+            gap: 1rem;
+        }
 
-        .btn-run {
+        input[type="text"] {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus { border-color: var(--accent); }
+
+        button {
             background: var(--text-main);
             color: var(--bg);
             border: none;
-            padding: 12px 24px;
-            font-family: var(--font-mono);
-            font-weight: 700;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            margin-top: 1rem;
-        }
-
-        .btn-run:hover { background: var(--accent); color: #fff; }
-        .btn-run:active { transform: scale(0.98); }
-
-        .output-panel {
-            background: #111;
-            border: 1px solid var(--border);
+            padding: 0 1.5rem;
             border-radius: 8px;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            display: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
         }
 
-        .output-metrics {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px dashed var(--border);
-        }
+        button:hover { opacity: 0.9; }
+        button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .out-metric { font-family: var(--font-mono); font-size: 0.85rem; }
-        .out-metric span { color: var(--accent); font-weight: 700; font-size: 1rem; margin-left: 8px;}
-        .out-success span { color: var(--success); }
-
-        .output-json {
-            font-family: var(--font-mono);
-            color: #a1a1aa;
-            font-size: 0.85rem;
-            white-space: pre-wrap;
-        }
-
-        .json-key { color: #f472b6; }
-        .json-val { color: #34d399; }
-
-        /* RESPONSIVE DESIGN */
-        @media (max-width: 768px) {
-            .arch-flow { flex-direction: column; gap: 2rem; padding: 2rem; }
-            .arch-arrow { 
-                width: 2px; height: 40px; margin: 0; top: 0; 
-            }
-            .arch-arrow::after { top: auto; bottom: -5px; right: -6px; transform: rotate(90deg); }
-            .output-metrics { flex-direction: column; gap: 0.5rem; }
-        }
     </style>
 </head>
 <body>
 
-    <div class="wrapper">
-        <!-- Hero Section -->
-        <header class="hero">
-            <div class="status-pill">
-                <div class="dot"></div>
-                Gateway Online
-            </div>
-            <h1>Enterprise <span>LLM</span> Gateway</h1>
-            <p class="explainer">
-                A highly-secure middleware proxy. It intercepts API requests, validates budgets via MongoDB, enforces strict rate limits via atomic Redis Token-Buckets, and securely forwards traffic to OpenAI/Anthropic—protecting your API keys from abuse.
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <div class="pill"><div class="dot"></div> System Live</div>
+            <h1>The LLM Proxy Gateway</h1>
+            <p class="subtitle">
+                Try the chat below. Instead of talking directly to an AI, your message is intercepted by this custom-built gateway. It verifies budgets, enforces rate limits, and counts tokens behind the scenes.
             </p>
-        </header>
-
-        <!-- Subtle Features List -->
-        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 4rem; flex-wrap: wrap;">
-            <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                Tested to 5k+ RPS
-            </span>
-            <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                < 15ms Overhead
-            </span>
-            <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Atomic Precision
-            </span>
         </div>
 
-        <!-- Architecture Flow -->
-        <h2 class="section-title">How It Works Under The Hood</h2>
-        <div class="arch-flow">
-            <div class="arch-node">
-                <div class="arch-icon">💻</div>
-                <div class="arch-title">1. Client Request</div>
-                <div class="arch-desc">Sends prompt & x-api-key</div>
-            </div>
-            <div class="arch-arrow"></div>
-            
-            <div class="arch-node">
-                <div class="arch-icon">🛡️</div>
-                <div class="arch-title">2. Mongo Auth</div>
-                <div class="arch-desc">Validates key & token budget</div>
-            </div>
-            <div class="arch-arrow"></div>
-            
-            <div class="arch-node">
-                <div class="arch-icon">⚡</div>
-                <div class="arch-title">3. Redis Limiter</div>
-                <div class="arch-desc">Lua-scripted Token Bucket</div>
-            </div>
-            <div class="arch-arrow"></div>
-            
-            <div class="arch-node">
-                <div class="arch-icon">🧠</div>
-                <div class="arch-title">4. AI Proxy</div>
-                <div class="arch-desc">Fetches response & logs usage</div>
-            </div>
-        </div>
-
-        <!-- Interactive Terminal Demo -->
-        <h2 class="section-title">Live Playground Demo</h2>
-        <div class="terminal">
-            <div class="term-header">
-                <div class="term-dot dot-r"></div>
-                <div class="term-dot dot-y"></div>
-                <div class="term-dot dot-g"></div>
-                <div class="term-title">POST /v1/chat/completions</div>
-            </div>
-            
-            <div class="term-body">
-                <div class="input-group">
-                    <p style="color: var(--text-muted); font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 1rem;">
-                        // Enter a prompt. This hits a secure mock endpoint to demonstrate the gateway's token extraction logic without burning real OpenAI credits.
-                    </p>
-                    <textarea id="promptInput" spellcheck="false">{"role": "user", "content": "Explain quantum computing in one sentence."}</textarea>
-                    <button class="btn-run" id="runBtn" onclick="runGatewayTest()">Execute Request ↵</button>
+        <!-- Chat UI -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    AI Assistant
                 </div>
-
-                <div class="output-panel" id="outputPanel">
-                    <div class="output-metrics">
-                        <div class="out-metric out-success">STATUS: <span id="outStatus">200 OK</span></div>
-                        <div class="out-metric">LATENCY: <span id="outLatency">0ms</span></div>
-                        <div class="out-metric">TOKENS EXTRACTED: <span id="outTokens">0</span></div>
+                <div class="demo-badge">Public Demo Endpoint</div>
+            </div>
+            
+            <div class="chat-history" id="chatHistory">
+                <!-- Initial AI Greeting -->
+                <div class="message msg-ai">
+                    <div class="msg-bubble">
+                        Hello! I am a simulated AI. Ask me a question, and watch how the Gateway securely processes your request before answering.
                     </div>
-                    <div class="output-json" id="outJson"></div>
                 </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="userInput" placeholder="Ask a question (e.g., 'What is an API?')" onkeypress="handleEnter(event)" />
+                <button id="sendBtn" onclick="sendMessage()">Send</button>
             </div>
         </div>
     </div>
 
     <script>
-        async function runGatewayTest() {
-            const btn = document.getElementById('runBtn');
-            const outputPanel = document.getElementById('outputPanel');
-            const outLatency = document.getElementById('outLatency');
-            const outTokens = document.getElementById('outTokens');
-            const outJson = document.getElementById('outJson');
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-            btn.textContent = 'Executing...';
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        async function sendMessage() {
+            const inputEl = document.getElementById('userInput');
+            const btn = document.getElementById('sendBtn');
+            const history = document.getElementById('chatHistory');
+            const text = inputEl.value.trim();
+
+            if (!text) return;
+
+            // 1. Add User Message
+            inputEl.value = '';
+            inputEl.disabled = true;
             btn.disabled = true;
-            btn.style.opacity = '0.5';
+
+            const userMsgHtml = `
+                <div class="message msg-user">
+                    <div class="msg-bubble">${text}</div>
+                </div>
+            `;
+            history.insertAdjacentHTML('beforeend', userMsgHtml);
+            history.scrollTop = history.scrollHeight;
+
+            // 2. Add Visualizer UI
+            const visualizerId = 'vis-' + Date.now();
+            const visHtml = `
+                <div class="message msg-ai" style="width: 100%; max-width: 100%;">
+                    <div class="gateway-visualizer" id="${visualizerId}" style="display: block;">
+                        <div class="gateway-title">Gateway Interception Sequence</div>
+                        <div class="step" id="${visualizerId}-step1"><span class="step-icon">🛡️</span> Intercepting Request...</div>
+                        <div class="step" id="${visualizerId}-step2"><span class="step-icon">🗄️</span> Validating MongoDB Budget...</div>
+                        <div class="step" id="${visualizerId}-step3"><span class="step-icon">⚡</span> Passing Redis Token-Bucket...</div>
+                        <div class="step" id="${visualizerId}-step4"><span class="step-icon">🧠</span> Forwarding to AI Model...</div>
+                    </div>
+                </div>
+            `;
+            history.insertAdjacentHTML('beforeend', visHtml);
+            history.scrollTop = history.scrollHeight;
+
+            // 3. Animate Visualizer (Simulating backend latency for demonstration)
+            const s1 = document.getElementById(`${visualizerId}-step1`);
+            const s2 = document.getElementById(`${visualizerId}-step2`);
+            const s3 = document.getElementById(`${visualizerId}-step3`);
+            const s4 = document.getElementById(`${visualizerId}-step4`);
+
+            s1.className = 'step active';
+            await sleep(400);
+            s1.className = 'step done';
+            s1.innerHTML = '<span class="step-icon">✅</span> Intercepted Request';
             
-            outputPanel.style.display = 'block';
-            outJson.textContent = 'Awaiting response from gateway proxy...';
-            outLatency.textContent = '...';
-            outTokens.textContent = '...';
+            s2.className = 'step active';
+            await sleep(500);
+            s2.className = 'step done';
+            s2.innerHTML = '<span class="step-icon">✅</span> Budget Validated (MongoDB)';
+            
+            s3.className = 'step active';
+            await sleep(300);
+            s3.className = 'step done';
+            s3.innerHTML = '<span class="step-icon">✅</span> Rate Limit Passed (Redis)';
 
-            const startTime = performance.now();
-
+            s4.className = 'step active';
+            
+            // 4. Hit real backend mock endpoint
             try {
-                // Hit the mock endpoint
                 const res = await fetch('/mock/chat/completions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         model: "gpt-4o-mini",
-                        mockedInput: document.getElementById('promptInput').value
+                        messages: [{ role: "user", content: text }]
                     })
                 });
-
+                
                 const data = await res.json();
-                const latency = Math.round(performance.now() - startTime);
+                
+                s4.className = 'step done';
+                s4.innerHTML = '<span class="step-icon">✅</span> AI Response Received';
 
-                // Syntax Highlight JSON loosely
-                let jsonString = JSON.stringify(data, null, 2);
-                jsonString = jsonString.replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:');
-                jsonString = jsonString.replace(/: "([^"]+)"/g, ': <span class="json-val">"$1"</span>');
-
-                setTimeout(() => {
-                    outJson.innerHTML = jsonString;
-                    outLatency.textContent = latency + 'ms';
-                    outTokens.textContent = data.usage.total_tokens;
-                    
-                    btn.textContent = 'Execute Request ↵';
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                }, 300);
+                // 5. Add AI Response Bubble
+                await sleep(300);
+                const aiMsgHtml = `
+                    <div class="message msg-ai">
+                        <div class="msg-bubble">${data.choices[0].message.content}</div>
+                        <div class="receipt">
+                            Tokens Consumed: <strong>${data.usage.total_tokens}</strong> | Logged asynchronously to DB.
+                        </div>
+                    </div>
+                `;
+                history.insertAdjacentHTML('beforeend', aiMsgHtml);
 
             } catch (err) {
-                outJson.textContent = 'Error: Connection Refused.';
-                btn.textContent = 'Execute Request ↵';
-                btn.disabled = false;
-                btn.style.opacity = '1';
+                s4.className = 'step done';
+                s4.innerHTML = '<span class="step-icon">❌</span> Connection Error';
+                
+                const aiMsgHtml = `
+                    <div class="message msg-ai">
+                        <div class="msg-bubble" style="color: #ef4444;">Error connecting to Gateway backend.</div>
+                    </div>
+                `;
+                history.insertAdjacentHTML('beforeend', aiMsgHtml);
             }
+
+            history.scrollTop = history.scrollHeight;
+            inputEl.disabled = false;
+            btn.disabled = false;
+            inputEl.focus();
         }
     </script>
 </body>
