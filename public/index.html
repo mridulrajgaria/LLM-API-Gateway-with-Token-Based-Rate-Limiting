@@ -68,36 +68,7 @@
             margin: 0 auto 3rem auto;
         }
 
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 4rem;
-        }
-
-        .metric-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            padding: 2rem 1.5rem;
-            border-radius: 16px;
-            text-align: center;
-        }
-
-        .metric-val {
-            font-family: var(--font-mono);
-            font-size: clamp(1.8rem, 3vw, 2.5rem);
-            color: var(--text-main);
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .metric-label {
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
+/* Hard numbers removed based on user feedback */
 
         /* --- ARCHITECTURE DIAGRAM --- */
         .section-title {
@@ -258,7 +229,6 @@
 
         /* RESPONSIVE DESIGN */
         @media (max-width: 768px) {
-            .metrics-grid { grid-template-columns: 1fr; }
             .arch-flow { flex-direction: column; gap: 2rem; padding: 2rem; }
             .arch-arrow { 
                 width: 2px; height: 40px; margin: 0; top: 0; 
@@ -283,20 +253,20 @@
             </p>
         </header>
 
-        <!-- Hard Numbers -->
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="metric-val">5,000+</div>
-                <div class="metric-label">Req / Second</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-val">< 15ms</div>
-                <div class="metric-label">Added Latency</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-val">100%</div>
-                <div class="metric-label">Atomic Precision</div>
-            </div>
+        <!-- Subtle Features List -->
+        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 4rem; flex-wrap: wrap;">
+            <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Tested to 5k+ RPS
+            </span>
+            <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                < 15ms Overhead
+            </span>
+            <span style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Atomic Precision
+            </span>
         </div>
 
         <!-- Architecture Flow -->
