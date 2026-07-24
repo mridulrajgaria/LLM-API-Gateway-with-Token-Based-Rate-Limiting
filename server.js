@@ -26,6 +26,18 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/llm-gatew
 
 // Mock LLM Endpoint
 app.post('/mock/chat/completions', (req, res) => {
+  const userMessage = (req.body.messages && req.body.messages[0] && req.body.messages[0].content) ? req.body.messages[0].content.toLowerCase() : '';
+  
+  let responseText = "That is a great question! As a secure AI proxy, I am routing this request while protecting the core API keys and logging token usage.";
+  
+  if (userMessage.includes('quantum')) {
+    responseText = 'Quantum computing uses quantum bits (qubits) to perform complex calculations exponentially faster than classical computers.';
+  } else if (userMessage.includes('api') || userMessage.includes('gateway')) {
+    responseText = 'An API Gateway is a management tool that sits between a client and a collection of backend services, handling authentication and rate limiting.';
+  } else if (userMessage.includes('hello') || userMessage.includes('hi')) {
+    responseText = 'Hello there! I am processing your request through a highly secure token-bucket rate limiter.';
+  }
+
   res.status(200).json({
     id: 'chatcmpl-12345',
     object: 'chat.completion',
@@ -35,7 +47,7 @@ app.post('/mock/chat/completions', (req, res) => {
       index: 0,
       message: {
         role: 'assistant',
-        content: 'Quantum computing uses quantum bits (qubits) to perform complex calculations exponentially faster than classical computers.'
+        content: responseText
       },
       finish_reason: 'stop'
     }],
