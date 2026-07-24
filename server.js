@@ -35,7 +35,7 @@ app.post('/mock/chat/completions', (req, res) => {
       index: 0,
       message: {
         role: 'assistant',
-        content: 'This is a mock response from the local LLM endpoint.'
+        content: 'Quantum computing uses quantum bits (qubits) to perform complex calculations exponentially faster than classical computers.'
       },
       finish_reason: 'stop'
     }],
